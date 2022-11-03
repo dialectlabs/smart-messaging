@@ -20,7 +20,7 @@ When sending smart messages, messaging clients will simply append Solana Pay URL
 
 This extract-and-render approach is analogous to how Link Previews are handled in traditional messaging clients.
 
-## Solana Pay Transfer Request
+## Solana Pay: Transfer Request
 
 Read the Solana Pay Transfer Request spec here.
 
@@ -38,7 +38,7 @@ solana:<recipient>
   &memo=<memo>
 ```
 
-## Transfer Request Smart Messages
+### Smart Message: Transfer Request
 
 Smart messages support Transfer Requests, but it is recommended that Transaction Requests be used, even for transfers.
 
@@ -56,7 +56,7 @@ The wallet's `signTransaction` then prompts the user to approve or reject the tr
 
 Once signed, the transaction is then submitted to the blockchain.
 
-## Solana Pay Transaction Request
+## Solana Pay: Transaction Request
 
 Read the Solana Pay Transaction Request spec here.
 
@@ -97,7 +97,7 @@ The user may then execute a POST to the same url, with the payload and response
 { "transaction": "<transaction>" }
 ```
 
-## Transaction Request Smart Messages
+### Smart Message: Transaction Request
 
 When a messaging client detects a string of the form `solana:<url>` in a message, it is extracted and rendered according to the label and icon provided by the `GET` request.
 
@@ -109,13 +109,13 @@ The wallet's `signTransaction` then prompts the user to approve or reject the tr
 
 Once signed, the transaction is then submitted to the blockchain.
 
-## Solana Pay Sign Message Requests
+## Solana Pay Sign Message Request
 
-## Sign Message Request Smart Messages
+### Smart Message: Sign Message Request
 
 ## Limitations of the Minimal Specification
 
-# Specification
+# Full Specification
 The full Smart Message Specification extends Solana Pay to include support for
 
 - Persistent state
