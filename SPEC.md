@@ -216,53 +216,82 @@ The third route manages transaction execution and subsequent management to track
 
 To provide a better user experience, Smart Message Transaction Request services may optionally extend the metadata provided by simple Solana Pay Transaction request services.
 
-Recall that the minimal Solana Pay Transaction Request service GET routes returns a simple `label` and `icon`, which in a minimal Smart Message context are the button text and image preview, respectively:
+### Metadata for state management
+
+Recall that the minimal Solana Pay Transaction Request service GET routes returns a  `label` and `icon`, which in a Smart Message context are the button text and image preview, respectively:
 
 ```json
 // GET <url> response
 { "label": "<label>", "icon": "<icon-url>" }
 ```
 
-However, to provide the best user experience, Transaction Request services may return metadata for every combination of `{state}_{user_role}` for the smart message states described earlier, and for users `sender` & `recipient`.
+However, to provide a best user experience, Transaction Request services may return metadata for every combination of `<component>.<state>.<user_role>` for the components `label` or `icon`, for smart message states described above, and for users `sender` & `recipient`.
 
 For example, a token transfer Transaction Request service should provide the following additional metadata:
 
 ```json
+// TODO: Disambiguate sender/recipient nomenclature
 {
   "icon": "<icon-url>",
-  "label": "<label>",
-  "ready_sender" : "Requested 20 SOL",
-  "ready_recipient": "Send 20 SOL",
-  "executing_sender" : "Sending 20 SOL",
-  "executing_recipient" : "Receiving 20 SOL",
-  "executing_sender" : "Sending 20 SOL",
-  "executing_recipient" : "Receiving 20 SOL",
-  "succeeded_recipient" : "Succeeded",
-  "succeeded_sender" : "Succeeded",
-  "failed_recipient" : "Failed",
-  "failed_sender" : "Failed",
-  "invalidated_recipient" : "No longer valid",
-  "invalidated_sender" : "No longer valid",
+  "label": {
+    "ready": {
+      "sender": "Requested 20 SOL",
+      "recipient": "Send 20 SOL"
+    },
+    "executing": {
+      "sender": "Receiving 20 SOL",
+      "recipient": "Sender 20 SOL"
+    },
+    "succeeded": {
+      "sender": "Received 20 SOL",
+      "receipient": "Sent 20 SOL"
+    },
+    "failed": "Failed",
+    "invalidated": "No longer valid"
+  }
 }
 ```
 
+Note that at the `component` or `state` level, the value can be either a string or nested JSON, depending on whether differentiation is needed.
 
+The following defaults are used in the absence of values provided in the above:
 
-The following values are defaults in the absence of values provided in the above:
+```json
+// TODO: Disambiguate sender/recipient nomenclature
+{
+  "icon": "<icon-url>",
+  "label": {
+    "ready": {
+      "sender": "Requested",
+      "recipient": "Execute"
+    },
+    "executing": "Executing",
+    "succeeded": "Succeeded",
+    "failed": "Failed",
+    "invalidated": "No longer valid"
+  }
+}
+```
 
-- `ready_sender` — "Requested"
-- `ready_receipient` — "Execute"
-- `executing_sender` — "Executing"
-- `executing_recipient` — "Executing"
-- `succeeded_recipient` — "Succeeded"
-- `succeeded_sender` — "Succeeded"
-- `failed_recipient` — "Failed"
-- `failed_sender` — "Failed"
-- `invalidated_recipient` — "No longer valid"
-- `invalidated_sender` — "No longer valid"
+### Metadata for enhanced rendering
 
+Beyond a Solana Pay `label` and `icon`, Smart Messages may also provide the following metadata:
+
+```json
+// TODO: Consolidate this <>-y format with exampled formats above
+{
+  "icon": "<icon-url>",
+  "label": "<label>",
+  "title": "<title>",
+  "description": "<description>"
+}
+```
+
+The values `title` and `description` allow for Link Preview-like smart messages, which provide more content for the user. In this form, the `label` is still used as the text for the button, which is now placed beside or below the title and description. The `icon` serves as the preview image.
 
 ## Smart Message usage in OpenGraph Link Previews
+
+
 
 ## Multi-Action Smart Messages
 
