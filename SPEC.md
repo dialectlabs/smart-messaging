@@ -116,101 +116,24 @@ Once signed, the transaction is then submitted to the blockchain.
 ## Limitations of the Minimal Specification
 
 # Full Specification
+
 The full Smart Message Specification extends Solana Pay to include support for
 
-- Persistent state
-- Additional metadata
+- Additional metadata, including state
+- State persistence
 - Use in other specifications like OpenGraph Link Previews
 - Multi-action support (e.g. "vote yes", "vote no")
 - Multi-party support (e.g. group chats)
 
-## Persistent state
-
-Smart Messages are not ephemeral. They persist in the chat long after their use. Persisting smart message state can help with usability and user experience.
-
-In this section we describe the optional states that Smart Messages support, as well as how that state can be tracked and persisted.
-
-A fully state-persisted system involves the following services:
+Additionally, the full specification includes 3 main system components:
 
 1. The Client — the Dialect app or any other messaging app.
 2. The Transaction Request Service — This is a Solana Pay Transaction Request Service, or any number of them.
-3. The State Service — Manages interactions between the Client and Transaction Request Services to manage state.
+3. [NEW] The State Service — Manages interactions between the Client and Transaction Request Services, while managing state.
 
-*diagram
+The Client and Transaction Request services are mandatory for any implementation of Smart Messaging or Solana Pay. The State Service is only needed to persiste state.
 
-### UUID Parameter
-
-Clients who wish to persist smart message state must generate a UUID and append it as a query parameter in the url in solana:<url>.
-
-```
-solana:<url>&uuid=<generated-uuid>
-```
-
-By using a UUID encoded in the url itself, smart message state is decoupled with any messaging-related state.
-
-The URL still specifies the URL for the Transaction Request API. If a UUID is present in this URL, the client will interpret this as an intent to proxy calls through the State Service to manage state.
-
-This UUID parameter is then used across the smart messaging system for tracking smart message state.
-
-### States
-
-Smart Messages may be in one of the following states:
-
-- `ready`
-- `executing`
-- `succeeded`
-- `failed`
-- `invalidated`
-
-Smart messages in state `ready` are ready for execution. If they are `executing` then they are in progress and will either resolve to `succeeded` or `failed`. Messages in state `succeeded` have completed successfully and may no longer be executed. Those in state `failed` may be retried. Smart messages in state `invalidated` are deemed no longer valid.
-
-Smart Messages with no state are considered `ready`.
-
-**Terminal states**
-
-Message states `ready` and `executing` are non-terminal states, in that they can further transition to other states. States `succeeded`, `failed`, and `invalidated` are terminal. This will be important later.
-
-**Pre- and post-action states**
-
-It is worth noting that the states `executing`, `succeeded`, and `failed` are only reachable by some action taken by the user in a smart messaging context, but `invalidated` is reachable without any user taking any action.
-
-For example, if Alice receives a buyout offer smart message from Bob on an NFT, but circumstances change such that she either no longer owns the NFT, or Bob cancels the offer, the smart message metadata should reflect that the "accept offer" action is no longer valid.
-
-Because of this, `invalidated` is treated slightly differently than `executing`, `succeeded`, and `failed`, in that it can be the result of some pre-validation performed by the Transaction Request Service. This will be explained in the Transaction Request Service section below.
-
-### Transaction Request Service
-
-The Transaction Request Service is equivalent to the Solana Pay Transaction Request API that developers may build to support Solana Pay Transaction Requests, but with some optional additional metadata and responsibilities.
-
-*diagram
-
-**Request validation (`ready` or `invalidated`)**
-
-Smart Messages about actions that are no longer valid should be rendered as such — e.g. a mint that has run out, or an NFT that is no longer for sale.
-
-To handle this, the GET and POST requests to the Transaction Request service may optionally do some validation to return a `state` attribute that is either in state `ready` or `invalidated`. If no state is returned at all, it is considered `ready`.
-
-Developers building Transaction Request services should take care to implement validation only if it is needed for the end user, since this involves additional computational overhead.
-
-Transaction Request services will never return `executing`, `succeeded`, or `failed`, as these states are specific to the smart message user interaction flow, and are handled by the state service.
-
-### State Service
-
-When persisting state, the State Service can be used between the client and any Transaction Request APIs. This intermediate state service forwards all requests to the Transaction Request URLs in question, while managing state for any given smart message.
-
-This service allows Transaction Request APIs to remain stateless, as minimal extensions of the Solana Pay Transaction Request APIs.
-
-Any State Service should support the following routes.
-
-1. A GET route that forwards the request to the underlying Transaction Request API GET route.
-2. A POST route that forwards the request to the underlying Transaction Request API POST route.
-3. A PUT route for submitting transactions to the blockchain (to monitor for completion and update to `succeeded` or `failed`).
-4. [FUTURE] A PUT route for updating smart message state by its UUID. This route is not supported in the current Smart Message implementation.
-
-The first two routes are passthrough calls from the client to the underlying Transaction Request APIs, managing intermediate state.
-
-The third route manages transaction execution and subsequent management to track & update final state (`executing`, `succeeded`, or `failed`).
-
+Let's start by extending the metadata returned by Transaction Request services, without preserving any state.
 
 ## Metadata
 
@@ -218,16 +141,24 @@ To provide a better user experience, Smart Message Transaction Request services 
 
 ### Metadata for state management
 
-Recall that the minimal Solana Pay Transaction Request service GET routes returns a  `label` and `icon`, which in a Smart Message context are the button text and image preview, respectively:
+Recall that the minimal Solana Pay Transaction Request service GET routes returns a `label` and `icon`, which in a Smart Message context are the button text and image preview, respectively:
 
 ```json
 // GET <url> response
 { "label": "<label>", "icon": "<icon-url>" }
 ```
 
-However, to provide a best user experience, Transaction Request services may return metadata for every combination of `<component>.<state>.<user_role>` for the components `label` or `icon`, for smart message states described above, and for users `sender` & `recipient`.
+However, to provide a best user experience, Transaction Request services may return metadata for every combination of `<component>.<state>.<user_role>` for the components `label` or `icon`, for smart message state, and for users `sender` & `recipient`.
 
-For example, a token transfer Transaction Request service should provide the following additional metadata:
+Smart Messages support the following states:
+
+- `ready`
+- `invalidated`
+- `executing`
+- `succeeded`
+- `failed`
+
+For example, a token transfer Transaction Request service may provide the following additional metadata:
 
 ```json
 // TODO: Disambiguate sender/recipient nomenclature
@@ -275,7 +206,7 @@ The following defaults are used in the absence of values provided in the above:
 
 ### Metadata for enhanced rendering
 
-Beyond a Solana Pay `label` and `icon`, Smart Messages may also provide the following metadata:
+Beyond a Solana Pay `label` and `icon`, Smart Messages may also provide the following metadata from the GET route:
 
 ```json
 // TODO: Consolidate this <>-y format with exampled formats above
@@ -288,6 +219,116 @@ Beyond a Solana Pay `label` and `icon`, Smart Messages may also provide the foll
 ```
 
 The values `title` and `description` allow for Link Preview-like smart messages, which provide more content for the user. In this form, the `label` is still used as the text for the button, which is now placed beside or below the title and description. The `icon` serves as the preview image.
+
+### Transaction Request Service state
+
+Transaction Request services may optionally return a `state`, of value `ready` or `invalidated`, since both of these are possible states before any user action.
+
+For example, if Alice receives a buyout offer smart message from Bob on an NFT, but circumstances change such that she either no longer owns the NFT, or Bob cancels the offer, the smart message metadata should reflect that the "accept offer" action is no longer valid.
+
+```json
+// TODO: Consolidate this <>-y format with exampled formats above
+{
+  "icon": "<icon-url>",
+  "label": "<label>",
+  "state": "invalidated",
+}
+```
+
+Additionally, the same validation may be performed in the Transaction Request POST route, which can also return `ready` or `invalidated`.
+
+No `state` provided at all is equivalent to `ready`.
+
+Developers building Transaction Request services should take care to implement validation only if it is needed for the end user experience, since this involves additional computational overhead on the GET and POST routes.
+
+Transaction Request services will never return `executing`, `succeeded`, or `failed`, as these states are specific to the smart message user interaction flow, and are handled by the state service.
+
+## State persistence
+
+Smart Messages are not ephemeral. They persist in the chat long after their use. Solana Pay is deliberately stateless, but persisting smart message state can help with usability and user experience.
+
+In this section, we introduce the State Service, and describe how it handles requests between the Client and Transaction Request services.
+
+The State Service supports the following routes:
+
+1. A GET route that forwards the request to the underlying Transaction Request API GET route.
+2. A POST route that forwards the request to the underlying Transaction Request API POST route.
+3. A PUT route for submitting transactions to the blockchain (to monitor for completion and update to `succeeded` or `failed`).
+4. [FUTURE] A PUT route for updating smart message state by its UUID. This route is not supported in the current Smart Message implementation.
+
+*diagram
+
+### UUID Parameter
+
+To persist data, we first need some kind of reference id. Clients who wish to persist smart message state must generate a UUID and append it as a query parameter in the url in solana:<url>.
+
+```
+solana:<url>&uuid=<generated-uuid>
+```
+
+By using a UUID encoded in the url itself, smart message state is decoupled from any messaging-related state.
+
+The URL still specifies the URL for the Transaction Request API. If a UUID is present in this URL, the client will interpret this as an intent to pass calls through the State Service to manage state.
+
+This UUID parameter is then used across the smart messaging system for tracking smart message state.
+
+### Routing Transaction Request GETs & POSTs
+
+**GET**
+
+Clients that detect a UUID in the URL will pass GET calls through the State Service.
+
+```
+// Client
+GET <state-service-url>?url=<url>
+```
+
+The request is then forwarded to the Transaction Request at the provided solana `url`.
+
+```
+// State service
+GET <url>
+```
+
+This Transaction Request service may then return metadata as described above.
+
+If no record exists with id `uuid`, a new record is created with all of the returned metadata.
+
+The state service then returns the metadata to the client.
+
+**POST**
+
+Post requests are similarly passed through the state service using the UUID in the url, and as described for GET, may create new records based on the UUID, and may update state from `ready` to `invalidated` during validation.
+
+```
+// Client
+POST <state-service-url>?url=<url>
+```
+
+```
+// State service
+POST <url>
+```
+
+This route then returns the result of the POST request back to the client.
+
+### Tracking transaction state
+
+Transaction Request service POST requests return a transaction ready for signing by the client.
+
+Once signed by the user, the transaction can be submitted back to the State Service for submission to the blockchain via a PUT request
+
+```
+// Client
+PUT <state-service-url>
+{ "transaction": "<signed-transaction>" }
+```
+
+The State service then manages submitting the signed transaction to the blockchain, updating smart message state to `executing`, monitoring transaction finality, and then settling state to either `succeeded` or `failed`.
+
+**Terminal states**
+
+Message states `ready` and `executing` are non-terminal states, in that they can further transition to other states. States `succeeded`, `failed`, and `invalidated` are terminal. This will be important later.
 
 ## Smart Message usage in OpenGraph Link Previews
 
