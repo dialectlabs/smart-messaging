@@ -120,7 +120,7 @@ The full Smart Message Specification extends Solana Pay to include support for
 
 - Persistent state
 - Additional metadata
-- Use in broader environments like OpenGraph Link Previews
+- Use in other specifications like OpenGraph Link Previews
 - Multi-action support (e.g. "vote yes", "vote no")
 - Multi-party support (e.g. group chats)
 
@@ -290,8 +290,6 @@ Beyond a Solana Pay `label` and `icon`, Smart Messages may also provide the foll
 The values `title` and `description` allow for Link Preview-like smart messages, which provide more content for the user. In this form, the `label` is still used as the text for the button, which is now placed beside or below the title and description. The `icon` serves as the preview image.
 
 ## Smart Message usage in OpenGraph Link Previews
-
-
 
 ## Multi-Action Smart Messages
 
