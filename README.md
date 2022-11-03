@@ -292,13 +292,13 @@ GET <url>
 
 This Transaction Request service may then return metadata as described above.
 
-If no record exists with id `uuid`, a new record is created with all of the returned metadata.
+If no record exists with id `uuid`, a 404 error will be returned. The client will need to POST to save the UUID.
 
 The state service then returns the metadata to the client.
 
 **POST**
 
-Post requests are similarly passed through the state service using the UUID in the url, and as described for GET, may create new records based on the UUID, and may update state from `ready` to `invalidated` during validation.
+Post requests are similarly passed through the state service using the UUID in the url, may create new records based on the UUID, and may update state from `ready` to `invalidated` during validation.
 
 ```
 // Client
