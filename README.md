@@ -22,7 +22,7 @@ This extract-and-render approach is analogous to how Link Previews are handled i
 
 ## Solana Pay: Transfer Request
 
-Read the Solana Pay Transfer Request spec here.
+Read the Solana Pay Transfer Request spec [here](https://github.com/solana-labs/solana-pay/blob/master/SPEC.md#specification-transfer-request).
 
 In the Solana Pay Transfer request, full transaction information is encoded in the url. It is a pure P2P protocol.
 
