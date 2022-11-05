@@ -95,11 +95,13 @@ where `label` is some descriptive text, and `icon` is some image url for display
 
 The user may then execute a POST to the same url, with the payload and response
 
+POST <url> payload
 ```json
-// POST <url> payload
 { "account": "<account>" }
+```
 
-// POST <url> response
+POST <url> response
+```json
 { "transaction": "<transaction>" }
 ```
 
@@ -320,9 +322,8 @@ Transaction Request service POST requests return a transaction ready for signing
 
 Once signed by the user, the transaction can be submitted back to the State Service for submission to the blockchain via a PUT request
 
-```
-// Client
-PUT <state-service-url>
+Client PUT <state-service-url>
+```json
 { "transaction": "<signed-transaction>" }
 ```
 
