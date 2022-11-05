@@ -6,7 +6,7 @@ Smart Messages are a URL-encoded specification for interactive messaging. Built 
 
 These actions can be both on-chain transactions as well as off-chain, wallet-authenticated actions. They can be simple token transfers, NFT buyout offers, DAO or multisig votes, social media likes and follows, e-commerce purchasing and referrals, and more.
 
-![5 0](https://user-images.githubusercontent.com/3632945/200104569-3e95c9f7-87e3-4515-9b8e-87a5ec89201f.png)
+![5 0](https://user-images.githubusercontent.com/3632945/200105159-0af75807-980c-425f-a72f-5ebe1d714b08.png)
 
 In its minimal form, the Smart Message specification is simply the Solana Pay transaction request spec. The full spec includes support for additional metadata in the GET and POST requests, state that is managed by an intermediate service, usage in broader environments like OpenGraph Link Previews, as well as multi-action and multi-party functionality.
 
