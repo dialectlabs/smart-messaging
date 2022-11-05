@@ -359,4 +359,4 @@ Future versions of the Smart Message specification will support multiple actions
 
 ## Multi-Party Smart Messages
 
-Smart Message support for Multi-party environemnts, such as group chat, will be coming in a future version of the specification.
+Smart Message support for multi-party environments, such as group chat, will be coming in a future version of the specification.
