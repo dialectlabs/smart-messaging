@@ -1,6 +1,6 @@
 # Smart Messaging
 
-Specification version `0.1.0`
+Specification version `0.0.1`
 
 Smart Messages are a URL-encoded specification for interactive messaging. Built on top of Solana Pay, smart messages allow senders to encode arbitrary actions into URLs that will then be rendered and actionable for the recipient.
 
