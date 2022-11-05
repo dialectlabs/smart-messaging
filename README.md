@@ -1,8 +1,12 @@
-# Smart Messages
+# Smart Messaging
+
+Specification version `0.1.0`
 
 Smart Messages are a URL-encoded specification for interactive messaging. Built on top of Solana Pay, smart messages allow senders to encode arbitrary actions into URLs that will then be rendered and actionable for the recipient.
 
 These actions can be both on-chain transactions as well as off-chain, wallet-authenticated actions. They can be simple token transfers, NFT buyout offers, DAO or multisig votes, social media likes and follows, e-commerce purchasing and referrals, and more.
+
+![5 0](https://user-images.githubusercontent.com/3632945/200104569-3e95c9f7-87e3-4515-9b8e-87a5ec89201f.png)
 
 In its minimal form, the Smart Message specification is simply the Solana Pay transaction request spec. The full spec includes support for additional metadata in the GET and POST requests, state that is managed by an intermediate service, usage in broader environments like OpenGraph Link Previews, as well as multi-action and multi-party functionality.
 
@@ -14,7 +18,7 @@ Solana Pay translates URL-encoded text into executable transactions. This lends 
 
 # Minimal Specification (Solana Pay)
 
-The Smart Message specification in its simplest form is the Solana Pay spec, with support for both Transfer Requests, Transaction Requests, and Sign Message Requests.
+The Smart Message specification in its simplest form is the [Solana Pay](https://github.com/solana-labs/solana-pay) spec, with support for both Transfer Requests, Transaction Requests, and Sign Message Requests.
 
 When sending smart messages, messaging clients will simply append Solana Pay URLs to the message text. Then, when rendering the sent message, clients will extract Solana Pay URLs to render them in usable ways.
 
@@ -58,6 +62,8 @@ Once signed, the transaction is then submitted to the blockchain.
 
 ## Solana Pay: Transaction Request
 
+![solana-pay-transaction-request](https://user-images.githubusercontent.com/3632945/200104128-f1d98665-f676-41a4-a0c6-83c6b65650b9.png)
+
 Read the Solana Pay Transaction Request spec here.
 
 The Solana Pay transaction request allows for executing arbitrary transactions. This is done by making a pair of GET and POST requests to a URL that returns human-readable information and a transaction ready for signing and execution, respectively.
@@ -78,8 +84,8 @@ The schemas for the steps above are described here.
 
 The initial GET request returns
 
+`// GET <url> response`
 ```json
-// GET <url> response
 { "label": "<label>", "icon": "<icon-url>" }
 ```
 
@@ -143,8 +149,8 @@ To provide a better user experience, Smart Message Transaction Request services 
 
 Recall that the minimal Solana Pay Transaction Request service GET routes returns a `label` and `icon`, which in a Smart Message context are the button text and image preview, respectively:
 
+GET <url> response
 ```json
-// GET <url> response
 { "label": "<label>", "icon": "<icon-url>" }
 ```
 
@@ -161,7 +167,6 @@ Smart Messages support the following states:
 For example, a token transfer Transaction Request service may provide the following additional metadata:
 
 ```json
-// TODO: Disambiguate sender/recipient nomenclature
 {
   "icon": "<icon-url>",
   "label": {
@@ -188,7 +193,6 @@ Note that at the `component` or `state` level, the value can be either a string 
 The following defaults are used in the absence of values provided in the above:
 
 ```json
-// TODO: Disambiguate sender/recipient nomenclature
 {
   "icon": "<icon-url>",
   "label": {
@@ -209,7 +213,6 @@ The following defaults are used in the absence of values provided in the above:
 Beyond a Solana Pay `label` and `icon`, Smart Messages may also provide the following metadata from the GET route:
 
 ```json
-// TODO: Consolidate this <>-y format with exampled formats above
 {
   "icon": "<icon-url>",
   "label": "<label>",
@@ -227,7 +230,6 @@ Transaction Request services may optionally return a `state`, of value `ready` o
 For example, if Alice receives a buyout offer smart message from Bob on an NFT, but circumstances change such that she either no longer owns the NFT, or Bob cancels the offer, the smart message metadata should reflect that the "accept offer" action is no longer valid.
 
 ```json
-// TODO: Consolidate this <>-y format with exampled formats above
 {
   "icon": "<icon-url>",
   "label": "<label>",
@@ -256,7 +258,7 @@ The State Service supports the following routes:
 3. A PUT route for submitting transactions to the blockchain (to monitor for completion and update to `succeeded` or `failed`).
 4. [FUTURE] A PUT route for updating smart message state by its UUID. This route is not supported in the current Smart Message implementation.
 
-*diagram
+![smart-messaging-diagrams-1](https://user-images.githubusercontent.com/3632945/200104076-dd4d27db-b168-48fb-abb2-79db6dd832b8.png)
 
 ### UUID Parameter
 
@@ -332,6 +334,29 @@ Message states `ready` and `executing` are non-terminal states, in that they can
 
 ## Smart Message usage in OpenGraph Link Previews
 
+![6 0](https://user-images.githubusercontent.com/3632945/200104889-b17dc897-0384-4263-9617-b9619cf8f89f.png)
+
+Develoeprs may add an additional `dialect` meta tag in the `<head>` section of their sites. Any Dialect comptabible clients will then render a button on the link preview according to the smart message.
+
+```html
+<html>
+  <head>
+    <title>...</title>
+    <meta property="og:title" content="..." />
+    <meta property="og:description" content="..." />
+    <meta property="dialect" content="solana:<url>" />
+    ...
+  </head>
+  ...
+</html>
+```
+
 ## Multi-Action Smart Messages
 
+Future versions of the Smart Message specification will support multiple actions, such as vote yes or vote no on a DAO proposal or multisig.
+
+![5 0](https://user-images.githubusercontent.com/3632945/200104298-1b8a7562-dba1-4a1f-ba1b-8c240a254712.png)
+
 ## Multi-Party Smart Messages
+
+Smart Message support for Multi-party environemnts, such as group chat, will be coming in a future version of the specification.
