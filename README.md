@@ -1,7 +1,5 @@
 # Smart Messaging
 
-Specification version `0.0.1`
-
 Smart Messages are a URL-encoded specification for interactive messaging. Built on top of Solana Pay, smart messages allow senders to encode arbitrary actions into URLs that will then be rendered and actionable for the recipient.
 
 These actions can be both on-chain transactions as well as off-chain, wallet-authenticated actions. They can be simple token transfers, NFT buyout offers, DAO or multisig votes, social media likes and follows, e-commerce purchasing and referrals, and more.
