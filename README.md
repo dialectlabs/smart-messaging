@@ -6,7 +6,7 @@ These actions can be both on-chain transactions as well as off-chain, wallet-aut
 
 ![5 0](https://user-images.githubusercontent.com/3632945/200105159-0af75807-980c-425f-a72f-5ebe1d714b08.png)
 
-In its minimal form, the Smart Message specification is simply the Solana Pay transaction request spec. The full spec includes support for additional metadata in the GET and POST requests, state that is managed by an intermediate service, usage in broader environments like OpenGraph Link Previews, as well as multi-action and multi-party functionality.
+In its minimal form, the Smart Message specification is simply the [Solana Pay transaction request spec](https://docs.solanapay.com/spec#specification-transaction-request). The full spec includes support for additional metadata in the GET and POST requests, state that is managed by an intermediate service, usage in broader environments like OpenGraph Link Previews, as well as multi-action and multi-party functionality.
 
 This documentation covers the design of the Smart Message spec, as well as implementation details and examples.
 
@@ -24,7 +24,7 @@ This extract-and-render approach is analogous to how Link Previews are handled i
 
 ## Solana Pay: Transfer Request
 
-Read the Solana Pay Transfer Request spec [here](https://github.com/solana-labs/solana-pay/blob/master/SPEC.md#specification-transfer-request).
+Read the [Solana Pay Transfer Request](https://github.com/solana-labs/solana-pay/blob/master/SPEC.md#specification-transfer-request).
 
 In the Solana Pay Transfer request, full transaction information is encoded in the url. It is a pure P2P protocol.
 
@@ -46,7 +46,7 @@ Smart messages support Transfer Requests, but it is recommended that Transaction
 
 When a messaging client detects a string of the above form in a message, it is extracted from the message content and rendered in the following form.
 
-*rendering
+\*rendering
 
 In the above rendering, standard libraries are used to translate `amount` and `spl-token` to `displayAmount` and `displaySplToken`, which are the amount divided by the token's decimals, and the human-readable token name, respectively.
 
@@ -62,7 +62,7 @@ Once signed, the transaction is then submitted to the blockchain.
 
 ![solana-pay-transaction-request](https://user-images.githubusercontent.com/3632945/200104128-f1d98665-f676-41a4-a0c6-83c6b65650b9.png)
 
-Read the Solana Pay Transaction Request spec here.
+Read the [Solana Pay Transaction Request spec](https://docs.solanapay.com/spec#specification-transaction-request).
 
 The Solana Pay transaction request allows for executing arbitrary transactions. This is done by making a pair of GET and POST requests to a URL that returns human-readable information and a transaction ready for signing and execution, respectively.
 
@@ -76,13 +76,14 @@ The full flow for a transaction request is:
 2. The client executes a POST, either initiated by the user or in parallel with the GET, to fetch a base64-encoded transaction.
 3. The user then takes some action to sign the returned transaction, and submits it to the blockchain for execution.
 
-The schemas for the steps above are described here.
+The schemas for the steps above are described below:
 
 ### GET request
 
 The initial GET request returns
 
 `// GET <url> response`
+
 ```json
 { "label": "<label>", "icon": "<icon-url>" }
 ```
@@ -94,11 +95,13 @@ where `label` is some descriptive text, and `icon` is some image url for display
 The user may then execute a POST to the same url, with the payload and response
 
 POST <url> payload
+
 ```json
 { "account": "<account>" }
 ```
 
 POST <url> response
+
 ```json
 { "transaction": "<transaction>" }
 ```
@@ -107,7 +110,7 @@ POST <url> response
 
 When a messaging client detects a string of the form `solana:<url>` in a message, it is extracted and rendered according to the label and icon provided by the `GET` request.
 
-*rendering
+\*rendering
 
 The `label` should be used as the button text. The user may then tap the button to begin execution. On tap, the `POST` request is made, a transaction is returned and passed to the user's wallet's `signTransaction` method.
 
@@ -123,7 +126,7 @@ Once signed, the transaction is then submitted to the blockchain.
 
 # Full Specification
 
-The full Smart Message Specification extends Solana Pay to include support for
+The full Smart Message Specification extends Solana Pay to include support for:
 
 - Additional metadata, including state
 - State persistence
@@ -137,7 +140,7 @@ Additionally, the full specification includes 3 main system components:
 2. The Transaction Request Service — This is a Solana Pay Transaction Request Service, or any number of them.
 3. [NEW] The State Service — Manages interactions between the Client and Transaction Request Services, while managing state.
 
-The Client and Transaction Request services are mandatory for any implementation of Smart Messaging or Solana Pay. The State Service is only needed to persiste state.
+The Client and Transaction Request services are mandatory for any implementation of Smart Messaging or Solana Pay. The State Service is only needed to persist state.
 
 Let's start by extending the metadata returned by Transaction Request services, without preserving any state.
 
@@ -150,6 +153,7 @@ To provide a better user experience, Smart Message Transaction Request services 
 Recall that the minimal Solana Pay Transaction Request service GET routes returns a `label` and `icon`, which in a Smart Message context are the button text and image preview, respectively:
 
 GET <url> response
+
 ```json
 { "label": "<label>", "icon": "<icon-url>" }
 ```
@@ -180,7 +184,7 @@ For example, a token transfer Transaction Request service may provide the follow
     },
     "succeeded": {
       "sender": "Received 20 SOL",
-      "receipient": "Sent 20 SOL"
+      "recipient": "Sent 20 SOL"
     },
     "failed": "Failed",
     "invalidated": "No longer valid"
@@ -233,7 +237,7 @@ For example, if Alice receives a buyout offer smart message from Bob on an NFT, 
 {
   "icon": "<icon-url>",
   "label": "<label>",
-  "state": "invalidated",
+  "state": "invalidated"
 }
 ```
 
@@ -321,6 +325,7 @@ Transaction Request service POST requests return a transaction ready for signing
 Once signed by the user, the transaction can be submitted back to the State Service for submission to the blockchain via a PUT request
 
 Client PUT <state-service-url>
+
 ```json
 { "transaction": "<signed-transaction>" }
 ```
@@ -335,7 +340,7 @@ Message states `ready` and `executing` are non-terminal states, in that they can
 
 ![6 0](https://user-images.githubusercontent.com/3632945/200104889-b17dc897-0384-4263-9617-b9619cf8f89f.png)
 
-Develoeprs may add an additional `dialect` meta tag in the `<head>` section of their sites. Any Dialect comptabible clients will then render a button on the link preview according to the smart message.
+Developers may add an additional `dialect` meta tag in the `<head>` section of their sites. Any Dialect compatible clients will then render a button on the link preview according to the smart message.
 
 ```html
 <html>
